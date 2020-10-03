@@ -113,4 +113,7 @@ make(plane_obj)
 - Equation: Used by Plane, to represent the standard form ax + by + cz = d
 - CoordFunc: Used by vvf, represent the component functions of a vector valued function (vvf)
 - Field: parent object for Vector_Field
-- Blector: the central class in which all math objects are processed through when make is called on it
+- Blector: the central class in which all math objects are processed through when make is called on it.
+
+
+
