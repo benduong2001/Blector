@@ -1,5 +1,5 @@
 import bpy, bmesh
-import math as mt
+import math
 
 expanse = 10
 subunit = 100
@@ -70,8 +70,9 @@ class Vector:
         
         self.length = self.magnitude = self.norm = Vector.VectorGetNorm(self)
         self.worldpoints = [self.tailp, self.headp]
-    def __add__(self, otherVector):
-        assert type(otherVector) == Vector
+    def __add__(self, other):
+        assert type(other) == Vector
+        otherVector = other
         if (self.dimens == otherVector.dimens):
             temp_add_list = [(s+o) for s, o in zip(self.headc, otherVector.headc)]
             return Vector(temp_add_list)
@@ -81,9 +82,13 @@ class Vector:
             temp_scalar_list = [(s*scalar) for s in self.headc]
             return Vector(temp_scalar_list)
         elif type(other) == Vector:
-            otherVector = other
-            temp_dot =  sum([(s * o) for s, o in zip(self.headc, otherVector.headc)])
-            return temp_dot
+            return self.dotprod(other)
+    def dotprod(self, other):
+        assert type(other) == Vector:
+        otherVector = other
+        temp_dot =  sum([(s * o) for s, o in zip(self.headc, otherVector.headc)])
+        return temp_dot
+
     def __subtract__(self, vector2):
         assert type(vector2) == Vector
         return self+(-1 * vector2)
@@ -96,7 +101,7 @@ class Vector:
         otherVectorNorm = (Vector.VectorGetNorm(otherVector))
         lower = self.norm * otherVectorNorm
         cosine = upper/lower
-        return mt.acos(cosine)
+        return math.acos(cosine)
     def unit_vector(self):
         if (self.magnitude == 0):
             # PREVENT ZERO DIVISION ERROR
@@ -107,24 +112,23 @@ class Vector:
 
 
 class Rt:
-    """
-    r(t) = a + t*b
-    where a, b are vectors
-    t (or any letter) is a variable
-    the left part, or a, is a fixed point
-    the right part, or b, is the direction vector
-    
-    
-    """
-    def __init__(self, basePoint, directionVector):
+    def __init__(self, basePoint, directionVector, asVector = False):
         self.basePoint = basePoint
         self.directionVector = directionVector
-        #print("doen")
         self.worldpoints = []
+        self.asVector = asVector
         """
         parameterization form: basepoint + T*directionvector
         """
     def BuildWorldslist(self):
+        if self.asVector == True:
+            self.worldpoints.append(self.basePoint)
+            baseVector = Vector(self.basePoint)
+            tvect = baseVector + (self.directionVector)
+            tcoord = list(tvect.headc)
+            tpoint = Point(tcoord)
+            self.worldpoints.append(tpoint)
+            return None
         baseVector = Vector(self.basePoint)
         for t in range(-10, 10):
             tvect = baseVector + ((self.directionVector).__mul__(t))
@@ -154,39 +158,34 @@ class CoordFunc:
         #self.fn = lambda n: eval(str_expr.replace("@", str(n)))        
     def fn(self, inpt):
         str_expr = self.str_expr
-        if type(inpt) == list:  # inpt is a point P = [x, y]  
+        if type(inpt) in [list, tuple]:  # inpt is a point P = [x, y]  
             if ("@" in str_expr):
                 str_expr = str_expr.replace("@", str(inpt[0]))
             if ("!" in str_expr):
                 str_expr = str_expr.replace("!", str(inpt[1]))
+            if ("$" in str_expr):
+                str_expr = str_expr.replace("$", str(inpt[2]))
         elif type(inpt) in [int, float]:  
             str_expr = str_expr.replace("@", str(inpt))
-        return eval(str_expr)
+        try:
+            answer = eval(str_expr)
+        except:
+            answer = None
+        return answer
+    def isPlaceholderCoordFunc(self):
+        return self.str_expr == "0"
 
 class vvf (Rt):
     def __init__(self, directionVector, basePoint=[0,0,0]):
         super(vvf, self).__init__(basePoint, directionVector)
     def BuildWorldslist(self):
         for t in domainList:
-            """
-            tprevectlist = []
-            try:
-                for dcf in self.directionVector:
-                    component = dcf.fn(t)
-                    tprevectlist.append(component)
-                tvect = Vector([tprevectlist])
-                tcoord = list(tvect.headc)
-                tpoint = Point(tcoord)
-                self.worldpoints.append(tpoint)
-            except:
-                nullpoint = Point([None, None, None])
-                self.worldpoints.append(nullpoint)
-            """
             tvect = Vector([dcf.fn(t) for dcf in self.directionVector])
             tcoord = list(tvect.headc)
             tpoint = Point(tcoord)
             self.worldpoints.append(tpoint)
-
+            
+               
 
 
 class Gradient: #(vvf)
@@ -200,10 +199,9 @@ class Gradient: #(vvf)
             x_num = basePoint[0]
             y_num = basePoint[1]
             z_num = mvfObj.apply(x_num, y_num)
-            print(z_num)
             return [x_num, y_num, z_num] 
     
-    def __init__(self, directionVector, mvfObj, basePoint = [0,0,0]):
+    def __init__(self, directionVector, mvfObj, basePoint = Point([0,0,0])):
         # [to uncomment this, uncom the pound in class header]
         ## super(Gradient,self).__init__(directionVector, Gradient.fixgradpoint(basePoint, mvfObj))
         # ensure point adjusted
@@ -218,11 +216,11 @@ class Gradient: #(vvf)
     def setUnit(self, boolunit):
         self.unitForm = boolunit;
     
-    def gradpoint(self, pointCoords):
+    def gradpoint(self, point):
+        pointCoords = point.coords
         self.basePoint = Gradient.fixgradpoint(pointCoords, self.mvfObj);
     
     def BuildWorldslist(self):
-        print("self basepoint is {}".format(str(self.basePoint)))
         #baseVector = Vector(self.basePoint)
         self.worldpoints = []
         startPointCoords = self.basePoint
@@ -242,8 +240,7 @@ class Gradient: #(vvf)
         self.worldpoints.append(startPoint)
         self.worldpoints.append(endPoint)
         return tvect
-            
-    
+
 
 class Plane:
     def __init__(self, first_inpt, secnd_inpt = None):
@@ -259,13 +256,12 @@ class Plane:
             self.equation = first_inpt
             self.normal_vector = Vector(first_inpt.ca[:-1])
             self.coeffs = list(first_inpt.ca[:-1])
-            print(self.coeffs)
             self.anchor = (first_inpt.ca[-1])
         elif normal_vector_point_pair_bool:
             # 2 points; vector and point
             self.normal_vector = first_inpt;
             self.base_point = secnd_inpt;
-            self.coeffs = list(first_input.headc)
+            self.coeffs = list(first_inpt.headc)
             self.anchor = sum([c*v for c, v in zip(list(first_inpt.headc), 
                                                    list(secnd_inpt.coords))])
             self.equation = Equation(self.coeffs + [self.anchor])
@@ -282,10 +278,7 @@ class Plane:
             if zcoeff == 0:
                 edit_points_coords[last_index] -= 0
             else:
-                print("\n")
-                print(edit_points_coords)
                 edit_points_coords[last_index] -= (1/(zcoeff));
-                print(edit_points_coords)
             point = Point(tuple(edit_points_coords))
             self.worldpoints[point_i] = point
     def BuildWorldslist(self):
@@ -354,6 +347,7 @@ class Blector:
     PLANE_NUM = 0
     PATH_NUM = 0
     TERRAIN_NUM = 0
+    FIELD_NUM = 0
     def setEdge(self, bm, vertA, vertB):
         if ((vertA != None) and (vertB != None)):
             newEdges = bm.edges.new((vertA, vertB))
@@ -361,8 +355,6 @@ class Blector:
         else:
             return None
     def setVert(self, bm, pointA):
-        #print("yall")
-        #print(pointA.coords)
         outsideDomain = tuple([]) #[None, None, None]
         if ((pointA.coords) != outsideDomain):
             newVert = bm.verts.new((pointA.coords))
@@ -499,6 +491,27 @@ class Blector:
 
         bm.to_mesh(me)  
         bm.free()
+    def addField(self, mathobj):
+        mesh = bpy.data.meshes.new("mesh")  # add a new mesh
+        obj = bpy.data.objects.new("FIELD" + str(Blector.FIELD_NUM), mesh)  # add a new object using the mesh
+        Blector.FIELD_NUM += 1
+        scene = bpy.context.scene
+        scene.objects.link(obj)  # put the object into the scene (link)
+        scene.objects.active = obj  # set as the active object in the scene
+        obj.select = True  # select object #"""
+        
+        me = bpy.context.object.data
+        bm = bmesh.new() #"""
+        bm.from_mesh(me)
+        
+        for vector_segment in mathobj.worldfield:
+            pointA, pointB = vector_segment
+            tempVertA = bm.verts.new(pointA.coords)
+            tempVertB = bm.verts.new(pointB.coords)
+            bm.edges.new((tempVertA, tempVertB))
+        
+        bm.to_mesh(me)  
+        bm.free()  
     def addObject(self, mathobj):
         if type(mathobj) in [Rt, vvf, Gradient]:
             self.addPath(mathobj)
@@ -506,6 +519,8 @@ class Blector:
             self.addPlane(mathobj)
         elif type(mathobj) in [MVF]:
             self.addTerrain(mathobj);
+        elif type(mathobj) in [Vector_Field, Gradient_Field]:
+            self.addField(mathobj)
       
 
 Blect = Blector()
@@ -523,158 +538,76 @@ def gradField(gradObj):
             tempGrad.gradpoint([i, j, 0])
             tempGrad.setUnit(True)
             make(tempGrad)
-def pw(a, b):
-    if a < 0:
-        return ((a)**(b))
-    elif a > 0:
-        return -((a)**(b))
-    else:
-        return 0 #"""
 
-fstr2 = "((!)**(2))-((@)**(2))"
-mvf2 = MVF(fstr2)
-#make(mvf2)
-
-
-dirvect3 = [CoordFunc("(@)*2*(-1)"), CoordFunc("(!)*2"), CoordFunc("0")]
-
-
-
-#dirvect = [CoordFunc("-2*@"), CoordFunc("2*@"), CoordFunc("0")]
-vvf2 = vvf(dirvect3)
-#make(vvf2)
-grad1 = Gradient(dirvect3, mvf2);
-#grad1.gradpoint([-2, 4])
-gradField(grad1)
-
-#make(grad1)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#grad1 = Gradient([CoordFunc("-2*@"), CoordFunc("2*@"), CoordFunc("0")], [1,-1])
-#make(grad1)
-
-lines = """
-rt1 = Rt(Point([-10, -1, -8]), Vector([0, -2,-2]))
-rt1.BuildWorldslist()
-rt1.worldpoints
-
-rt2 = Rt(Point([-16, 3, -13]), Vector([-2, 0, -3]))
-rt2.BuildWorldslist()
-
-Blect.addObject(rt1)
-Blect.addObject(rt2)
-
-pl1 = Plane(Equation([1, 1, 1, 8]))
-pl1.BuildWorldslist()
-Blect.addObject(pl1)
-
-vvf1 = vvf([CoordFunc("-mt.sin(@)"), CoordFunc("mt.cos(@)"), CoordFunc("@")])
-vvf2 = vvf([CoordFunc("-mt.cos(@)"), CoordFunc("-mt.sin(@)"), CoordFunc("1")])
-vvf1.BuildWorldslist()
-vvf2.BuildWorldslist()
-Blect.addObject(vvf2)
-Blect.addObject(vvf1)
-
-pl2 = Plane(Equation([1, 1, 1, 0]))
-pl2.BuildWorldslist()
-Blect.addObject(pl2)
-
-
-pl3 = Plane(Equation([1, 4, 3, 8]))
-pl3.BuildWorldslist()
-Blect.addObject(pl3)
-
-pl4 = Plane(Equation([1, 0, 0, 8]))
-pl4.BuildWorldslist()
-Blect.addObject(pl4) #"""
-
-#fstr = "((mt.sqrt((@**2) - (!**2) + 64) - 8)/((@**3) - ((@)*(!**2))))"
-#mvf1 = MVF(fstr)
-#mvf1.BuildWorldsList()
-#Blect.addObject(mvf1)
-
-part1vis = """
-pl1 = Plane(Equation([1, -2, 1, 0]))
-pl2 = Plane(Equation([0, 2, -8, 8]))
-pl3 = Plane(Equation([5, 0, -5, 10]))
-
-make(pl1)
-make(pl2)
-make(pl3)
-
-
-pl4 = Plane(Equation([1, -2, 1, 0]))
-pl5 = Plane(Equation([0, 1, -4, 2]))
-pl6 = Plane(Equation([0, 0, 1, -2/3]))
-
-#make(pl4)
-#make(pl5)
-#make(pl6)
-
-
-#rt4 = Rt(Point([0, 0, 0]), Vector([(-2/3), (-2/3), (-2/3)]))
-#make(rt4)
-
-
-rt1 = Rt(Point([0, 0, 0]), Vector([1, 0, 5]))
-#make(rt1)
-rt2 = Rt(Point([0, 0, 0]), Vector([-2, 2, 0]))
-#make(rt2)
-rt3 = Rt(Point([0, 0, 0]), Vector([1, -8, -5]))
-#make(rt3) #"""
-
-part2vis = '''
-pl1a = Plane(Equation([ 3, 5,-4, 0]))
-pl2a = Plane(Equation([-3,-2, 4, 0]))
-pl3a = Plane(Equation([6, 1, -8, 0]))
-
-make(pl1a)
-make(pl2a)
-make(pl3a)
-
-rt1a = Rt(Point([0, 0, 0]), Vector([3, -3, 6]))
-rt2a = Rt(Point([0, 1, 0]), Vector([5, -2, 1]))
-rt3a = Rt(Point([0, 0, 0]), Vector([-4, 4, -8]))
-
-#"https://www.math.drexel.edu/~jwd25/LM_SPRING_07/lectures/lecture1.html"
-
-make(rt1a)
-make(rt2a)
-make(rt3a) #'''
-
-#rt1b = Rt(Point([0, 0, 0]), Vector([-3, 1, 0]))
-#rt2b = Rt(Point([0, 0, 0]), Vector([-2, 0, 1]))
-
-#make(rt1b)
-#make(rt2b)
-
-#pw = """
-
-#fstr = "((@)**2)/(((@)**2) + ((!)**2))"
-fstr = "108 - ! + (0*@)"
-mvf1 = MVF(fstr)
-#make(mvf1)
-
-#fstr2 = "mt.log(@) + 2*mt.log(!) - @ - (4*!)"
-#fstr2 = "mt.sin(@+!) - mt.cos(@)"
-#fstr2 = "(@) - ((!)**2) - (mt.log(@ + !))"
-
-#fstr2 = "((@)**4)*(1/((!)**2))"
-
-#vvf1 = vvf([CoordFunc("-mt.cos(@ - 2)"), CoordFunc("mt.sin(2*@)"), CoordFunc("0")])
-#vvf1 = vvf([CoordFunc("-mt.sin(@)"), CoordFunc("mt.cos(@)"), CoordFunc("@")])
-#make(vvf1)
+class Field:
+    def __init__(self):
+        pass
+        
+class Vector_Field (Field):
+    def __init__(self, coord_func_vector, basePoint=[0,0,0]):
+        assert type(coord_func_vector) == vvf;
+        assert type(coord_func_vector.directionVector[0]) == CoordFunc;
+        self.coord_func_vector = coord_func_vector;
+        self.worldfield = []
+        self.radius = 5
+        self.setUnit(True);
+    
+    def setUnit(self, boolunit):
+        self.unitForm = boolunit;
+    
+    def _pad_2d_points(self, point):
+        if type(point) in [tuple, list]:
+            if len(point) == 2:
+                return point + [0]
+        if type(point) in [Point]:
+            if len(point.coords) == 2:
+                return Point(list(point.coords) + [0])
+        return point
+    def _addVectorSegment(self, input_point_list):
+        
+        t_point_list = [cf.fn(input_point_list) for cf in self.coord_func_vector.directionVector]
+        if None in t_point_list:
+            # if some math error (like outside of domain, div by zero occurs, abandon this point
+            return None
+        input_point_list = self._pad_2d_points(input_point_list)
+        t_point_list = self._pad_2d_points(t_point_list)
+                
+        directionPointCoords = t_point_list
+        if (self.unitForm == True):
+            unitScalar = (sum([(dpc*dpc) for dpc in directionPointCoords]))**(1/2)
+            if (unitScalar == 0):
+                # PREVENT ZERO DIVIDE ERROR
+                directionPointCoords = [0*dpc for dpc in directionPointCoords]
+            else:
+                directionPointCoords = [(1/unitScalar)*dpc for dpc in directionPointCoords]
+        t_point_list = directionPointCoords        
+        input_vect = Vector(input_point_list)
+        input_point = Point(input_point_list)        
+        t_vect = Vector(t_point_list)
+        end_vect = input_vect + t_vect
+        end_point = Point(end_vect.headc)
+        end_point_list = list(end_vect.headc)
+        vector_segment = [input_point, end_point]
+        self.worldfield.append(vector_segment)
+    def _BuildVectorField3D(self):
+        r = self.radius
+        for i in range(-r, r+1):
+            for j in range(-r, r+1):
+                for k in range(-r, r+1):
+                    input_point_list = [i, j, k]
+                    self._addVectorSegment(input_point_list)
+    def _BuildVectorField2D(self):
+        r = self.radius
+        for i in range(-r, r+1):
+            for j in range(-r, r+1):
+                input_point_list = [i, j]
+                self._addVectorSegment(input_point_list)
+    def BuildWorldslist(self):
+        if len(self.coord_func_vector.directionVector) == 2:
+            self._BuildVectorField2D() # 2D
+        elif len(self.coord_func_vector.directionVector) == 3:
+            # if the third coordfunc isn't just a placeholder 
+            if self.coord_func_vector.directionVector[2].isPlaceholderCoordFunc():
+                self._BuildVectorField2D()
+            else:
+                self._BuildVectorField3D()
