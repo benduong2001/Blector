@@ -84,7 +84,7 @@ class Vector:
         elif type(other) == Vector:
             return self.dotprod(other)
     def dotprod(self, other):
-        assert type(other) == Vector:
+        assert type(other) == Vector
         otherVector = other
         temp_dot =  sum([(s * o) for s, o in zip(self.headc, otherVector.headc)])
         return temp_dot
@@ -519,7 +519,7 @@ class Blector:
             self.addPlane(mathobj)
         elif type(mathobj) in [MVF]:
             self.addTerrain(mathobj);
-        elif type(mathobj) in [Vector_Field, Gradient_Field]:
+        elif type(mathobj) in [Vector_Field]:
             self.addField(mathobj)
       
 
@@ -535,7 +535,7 @@ def gradField(gradObj):
     for i in range(-k, k+1):
         for j in range(-k, k+1):
             tempGrad = Gradient(gradObj.directionVector, gradObj.mvfObj)
-            tempGrad.gradpoint([i, j, 0])
+            tempGrad.gradpoint(Point([i, j, 0]))
             tempGrad.setUnit(True)
             make(tempGrad)
 
