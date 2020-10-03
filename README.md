@@ -116,4 +116,24 @@ make(plane_obj)
 - Blector: the central class in which all math objects are processed through when make is called on it.
 
 
-
+## Example Images
+- Multi-variable Function (MVF)
+![](BlectorGithub_example_images/Blector_example_image_01.png)
+- Rt being used to graph a vector.
+![](BlectorGithub_example_images/Blector_example_image_02.png)
+- Path (Rt)
+![](BlectorGithub_example_images/Blector_example_image_03.png)
+- Vector valued Function (vvf)
+![](BlectorGithub_example_images/Blector_example_image_04.png)
+- Gradient (in orange) at one angle. MVF (in black) is also graphed for reference.
+![](BlectorGithub_example_images/Blector_example_image_05.png)
+- Same Gradient (in orange) at another angle for clarity. MVF (in black) is also graphed for reference.
+![](BlectorGithub_example_images/Blector_example_image_06.png)
+- Gradient Field of the same gradient from before (gradField)
+![](BlectorGithub_example_images/Blector_example_image_07.png)
+- Vector Field (Vector_Field)
+![](BlectorGithub_example_images/Blector_example_image_08.png)
+- Plane (method 1 with equation)
+![](BlectorGithub_example_images/Blector_example_image_09.png)
+- Plane (method 2 with normal vector and point)
+![](BlectorGithub_example_images/Blector_example_image_10.png)
