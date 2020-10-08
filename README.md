@@ -1,7 +1,7 @@
 # Blector 
-- (Vectors on Blender): student project for graphing mathematical objects from Linear Algebra and multivariable calculus on Blender's python.
+- ("Blender Vector"): student project for graphing mathematical objects from vector and multivariable calculus on Blender's built-in python script feature.
 
-You will need Blender installed. This script was written in the 2.79 version. It should work for the current 2.8 version.
+You will need Blender installed. This script was written in the 2.79 version. It should work for the current 2.8 version. Paste the code onto Blender's script mode.
 
 Since Blender is 3D, this software can only support mathemtical objects up to 3 dimensions. Blector can support the following classes:
 - Multivariable functions of 2 variables, under class name "MVF"
