@@ -10,7 +10,7 @@ Since Blender is 3D, this software can only support mathemtical objects up to 3 
 - Paths (Simple Vector functions of t), under class name "Rt"
 - Vector Fields, under class name "Vector_Field"
 - Gradients, under class name "Gradient"
-Any class in the script that isn't of the ones described above, aren't meant to be graphed.
+- Any class in the script that aren't mentioned above aren't meant to be graphed.
 
 # Rules for string representation of functions:
 - Most functions will be represented by strings that get evaluated with python's eval function. When representing variables in string, "@" is used for x, "!" for y, "$" is used for z. Using non-alphabet symbols is just to prevent collision with math functions that also have the same letter. These correspondences are not arbitrary; you must use "@' for x, and so on.
