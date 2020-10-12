@@ -37,7 +37,7 @@ make(mvf_obj)
 ```
 
 ## - Graphing Paths (Rt):
-Supplemental Class: Vector, Point
+(Supplemental Class: Vector, Point)
 Create the Point object for the origin or base point, and the Vector for the direction vector.
 Example code: # graphing R(t) = (-10, -1, -8) + <0, -2, -2>
 ```
@@ -52,7 +52,7 @@ make(rt_obj)
 ```
 
 ## - Graphing Vector-valued functions (vvf):
-Supplemental Class: CoordFunc
+(Supplemental Class: CoordFunc)
 Write a list of CoordFunc objects that are all in terms of "@" (which will be the "t" in regular vector valued functions). 
 The list must have length 3. If you do not want to have a 3rd component, use the placeholder CoordFunc("0") for the 3rd item.
 The vvf class by itself is usually for 1 variable (t or "@") in its components. For vector-valued functions with multivariable coordfuncs, see Gradient and Vector_Field.
@@ -63,7 +63,7 @@ make(vvf_obj)
 ```
 
 ## - Graphing Gradients (Gradient):
-Supplemental Class: vvf, MVF, Point
+(Supplemental Class: vvf, MVF, Point)
 You will need the original multi variable function as mvf, and then the derivative of the MVF as a vvf, and a point to signify the base point for the gradient vector
 You can also avoid implementing the basepoint in the initial creation, and install it later with the function gradpoint, but do so before calling make(). T
 The result is a vector on the MVF, pointing towards the direction of steepest ascent.
@@ -79,7 +79,7 @@ make(grad_obj)
 ```
 
 ## - Graphing Vector Fields (Vector_Field)
-Supplemental Class: vvf
+(Supplemental Class: vvf)
 Create a vvf withe the multivariable CoordFuncs, then create the Vector FIeld object with it
 Example code: graphing F = <-xy, y, 0>
 ```
@@ -89,7 +89,7 @@ make(vector_field_obj)
 ```
 
 ## - Graphing  Planes (Plane):
-Supplemental Class: Equation, Vector, Point
+(Supplemental Class: Equation, Vector, Point)
 There are 2 ways to create the Plane class:
 A) With a plane equation in the format of ax + by + cz = d (Recommended)
 Write a list of 4 real numbers. This is basically the [a, b, c, d] from a plane's standard form of ax + by + cz = d. Initialize the Equation class with it.
