@@ -1,5 +1,5 @@
 # Blector 
-("Blender Vector"): student project for graphing mathematical objects from vector and multivariable calculus on Blender's built-in python script feature.
+Student project for graphing mathematical objects from vector and multivariable calculus on Blender's built-in python script feature.
 
 You will need Blender installed. This script was written in the 2.79 version. It should work for the current 2.8 version. Paste the code onto Blender's script mode.
 
